@@ -1,0 +1,190 @@
+[
+  {
+    "id": "bq_001",
+    "category": "bigquery_only",
+    "question": "What is Meridian Trading's current health score and status?",
+    "expected_sources": ["bigquery"],
+    "expected_confidence": "high",
+    "key_facts": ["health_score: 31", "status: At-Risk", "Meridian Trading"],
+    "must_not_contain": ["I don't have that data"]
+  },
+  {
+    "id": "bq_002",
+    "category": "bigquery_only",
+    "question": "What is our total ARR across all active customers?",
+    "expected_sources": ["bigquery"],
+    "expected_confidence": "high",
+    "key_facts": ["ARR", "active"],
+    "must_not_contain": ["I don't have that data"]
+  },
+  {
+    "id": "bq_003",
+    "category": "bigquery_only",
+    "question": "Who are our at-risk accounts?",
+    "expected_sources": ["bigquery"],
+    "expected_confidence": "high",
+    "key_facts": ["Meridian Trading", "At-Risk"],
+    "must_not_contain": ["I don't have that data"]
+  },
+  {
+    "id": "bq_004",
+    "category": "bigquery_only",
+    "question": "How many seats does Apex Financial have contracted vs active?",
+    "expected_sources": ["bigquery"],
+    "expected_confidence": "high",
+    "key_facts": ["850", "848", "Apex Financial"],
+    "must_not_contain": ["I don't have that data"]
+  },
+  {
+    "id": "bq_005",
+    "category": "bigquery_only",
+    "question": "Which customer has churned and what was their ARR?",
+    "expected_sources": ["bigquery"],
+    "expected_confidence": "high",
+    "key_facts": ["NordBank AG", "Churned", "144000"],
+    "must_not_contain": ["I don't have that data"]
+  },
+  {
+    "id": "upload_001",
+    "category": "upload_only",
+    "question": "Summarize what is in my uploaded files",
+    "expected_sources": ["uploaded"],
+    "expected_confidence": "high",
+    "key_facts": [],
+    "must_not_contain": ["I don't have that data"],
+    "requires_upload": true
+  },
+  {
+    "id": "upload_002",
+    "category": "upload_only",
+    "question": "What does my uploaded data tell me about pipeline coverage?",
+    "expected_sources": ["uploaded"],
+    "expected_confidence": "high",
+    "key_facts": [],
+    "must_not_contain": [],
+    "requires_upload": true
+  },
+  {
+    "id": "multi_001",
+    "category": "multi_source",
+    "question": "For our highest ARR at-risk account, what is the maximum discount we can offer without VP approval, and has the board flagged them as a risk?",
+    "expected_sources": ["bigquery", "uploaded"],
+    "expected_confidence": "high",
+    "key_facts": ["Meridian Trading", "540000", "15%"],
+    "must_not_contain": ["I don't have that data"]
+  },
+  {
+    "id": "multi_002",
+    "category": "multi_source",
+    "question": "How does our Q3 ARR compare to our Q4 weighted pipeline coverage?",
+    "expected_sources": ["bigquery", "uploaded"],
+    "expected_confidence": "high",
+    "key_facts": ["ARR", "pipeline", "Q3", "Q4"],
+    "must_not_contain": []
+  },
+  {
+    "id": "multi_003",
+    "category": "multi_source",
+    "question": "Which at-risk accounts qualify for the RIIP retention promotion?",
+    "expected_sources": ["bigquery", "uploaded"],
+    "expected_confidence": "high",
+    "key_facts": ["Meridian Trading"],
+    "must_not_contain": []
+  },
+  {
+    "id": "disambig_001",
+    "category": "disambiguation",
+    "question": "What is the price for Meridian Trading's subscription?",
+    "expected_sources": ["bigquery"],
+    "expected_confidence": "high",
+    "key_facts": ["arr_usd", "540000", "Meridian Trading"],
+    "must_not_contain": ["I don't have that data"],
+    "must_contain_disambig": true
+  },
+  {
+    "id": "disambig_002",
+    "category": "disambiguation",
+    "question": "How many seats does Apex Financial have?",
+    "expected_sources": ["bigquery"],
+    "expected_confidence": "high",
+    "key_facts": ["850", "848", "contracted", "active"],
+    "must_not_contain": ["I don't have that data"],
+    "must_contain_disambig": true
+  },
+  {
+    "id": "disambig_003",
+    "category": "disambiguation",
+    "question": "Who owns the Pinnacle Wealth account?",
+    "expected_sources": ["bigquery"],
+    "expected_confidence": "high",
+    "key_facts": ["James Okoye", "Pinnacle Wealth"],
+    "must_not_contain": ["I don't have that data"]
+  },
+  {
+    "id": "followup_001",
+    "category": "followup",
+    "question": "What is their health score?",
+    "expected_sources": ["bigquery"],
+    "expected_confidence": "high",
+    "key_facts": [],
+    "must_not_contain": [],
+    "prior_context": "Tell me about Meridian Trading"
+  },
+  {
+    "id": "followup_002",
+    "category": "followup",
+    "question": "Who is their CSM?",
+    "expected_sources": ["bigquery"],
+    "expected_confidence": "high",
+    "key_facts": [],
+    "must_not_contain": [],
+    "prior_context": "What is the status of Apex Financial?"
+  },
+  {
+    "id": "lowconf_001",
+    "category": "low_confidence",
+    "question": "What was the average deal cycle length for Enterprise accounts closed in Q2 FY2024, and how does it compare to our industry benchmark?",
+    "expected_sources": ["bigquery"],
+    "expected_confidence": "low",
+    "key_facts": [],
+    "must_not_contain": [],
+    "must_refuse": true
+  },
+  {
+    "id": "lowconf_002",
+    "category": "low_confidence",
+    "question": "What is our customer acquisition cost and lifetime value ratio?",
+    "expected_sources": ["bigquery"],
+    "expected_confidence": "low",
+    "key_facts": [],
+    "must_not_contain": [],
+    "must_refuse": true
+  },
+  {
+    "id": "nrr_001",
+    "category": "bigquery_only",
+    "question": "What is our latest NRR?",
+    "expected_sources": ["bigquery"],
+    "expected_confidence": "high",
+    "key_facts": ["112", "NRR"],
+    "must_not_contain": ["I don't have that data"]
+  },
+  {
+    "id": "nrr_002",
+    "category": "bigquery_only",
+    "question": "Show me GoldLeaf Advisors account details",
+    "expected_sources": ["bigquery"],
+    "expected_confidence": "high",
+    "key_facts": ["GoldLeaf Advisors", "91", "Mid-Market"],
+    "must_not_contain": ["I don't have that data"]
+  },
+  {
+    "id": "churn_001",
+    "category": "bigquery_only",
+    "question": "What is the total ARR at risk of churn?",
+    "expected_sources": ["bigquery"],
+    "expected_confidence": "high",
+    "key_facts": ["Meridian Trading", "540000"],
+    "must_not_contain": ["I don't have that data"]
+  }
+]

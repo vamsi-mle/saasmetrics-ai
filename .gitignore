@@ -1,0 +1,17 @@
+# Secrets
+service-account-key.json
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+
+# Runtime artifacts
+uploads_store/
+eval_results_*.json
+
+# OS
+.DS_Store
+Thumbs.db

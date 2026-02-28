@@ -1,0 +1,269 @@
+# ============================================================
+# saasmetrics.ai  |  Data Dictionary
+# This file is injected into the Gemini system prompt at runtime.
+# It resolves every ambiguous column pair so the model never guesses.
+# It also maps common business phrases to the correct column.
+# ============================================================
+
+schema_description: >
+  saasmetrics.ai is a B2B SaaS cybersecurity company.
+  Dataset: saasmetrics (BigQuery).
+  All monetary values are in USD unless stated otherwise.
+  All dates are in the America/New_York timezone by default.
+
+tables:
+
+  customers:
+    description: >
+      Master customer record. One row per customer.
+      Only use status='Active' or status='At-Risk' when counting current customers.
+      Prospects (status='Prospect') are not yet customers.
+      Churned (status='Churned') are former customers.
+    columns:
+      arr_usd:
+        definition: Annual Recurring Revenue recognized in the current billing period.
+        use_when: User asks about revenue, ARR, account size, or "how much do they pay us".
+        do_not_confuse_with: arr_bookings_usd
+        example_questions:
+          - "What is our total ARR?"
+          - "How much ARR does Apex Financial contribute?"
+          - "Which customers pay us more than $200K a year?"
+
+      arr_bookings_usd:
+        definition: >
+          Booked ARR — the annualized value of the signed contract.
+          For active customers this equals arr_usd.
+          For prospects or deals signed but not yet started, this may be higher than arr_usd.
+        use_when: User asks about "bookings", "signed deals", "contracted value", or pipeline value.
+        do_not_confuse_with: arr_usd
+        example_questions:
+          - "What's the value of deals we've signed this quarter?"
+          - "What's our total bookings?"
+
+      seats_contracted:
+        definition: Number of seats on the signed order form.
+        use_when: >
+          User asks about "contracted seats", "licensed seats", "seats we sold them",
+          or any question about what the customer paid for.
+        do_not_confuse_with: seats_active
+        example_questions:
+          - "How many seats did Apex Financial buy?"
+          - "Which customers have more than 500 contracted seats?"
+
+      seats_active:
+        definition: >
+          Number of seats that had at least one login in the trailing 30 days.
+          This is always <= seats_contracted.
+        use_when: >
+          User asks about "active users", "who's actually using it", "usage",
+          "seat utilization", or "are they getting value".
+        do_not_confuse_with: seats_contracted
+        example_questions:
+          - "How many users are actually logging in at Apex?"
+          - "Which customers have low seat utilization?"
+          - "Is Pinnacle Wealth using what they paid for?"
+
+      csm_owner:
+        definition: >
+          Customer Success Manager. Owns post-sale relationship, health, renewals,
+          and expansion. The person responsible for keeping the customer happy.
+        use_when: >
+          User asks "who owns this account", "who's responsible for the renewal",
+          "who should we contact about churn risk", "who manages this customer".
+        do_not_confuse_with: ae_owner
+        example_questions:
+          - "Who owns the Meridian Trading account?"
+          - "Which accounts does Priya Nair own?"
+          - "Who is responsible for Meridian's renewal?"
+
+      ae_owner:
+        definition: >
+          Account Executive. Owns new business acquisition and expansion opportunities.
+          The person who originally sold the deal.
+        use_when: >
+          User asks "who sold this account", "who closed this deal",
+          "who is working the Fortress Bank opportunity".
+        do_not_confuse_with: csm_owner
+        example_questions:
+          - "Who sold the Vantage Capital deal?"
+          - "Which AE has the most Enterprise logos?"
+
+      health_score:
+        definition: >
+          Composite score 0–100 based on usage, support ticket frequency, NPS, and
+          engagement signals. Below 50 = at risk. Above 75 = healthy.
+        use_when: User asks about account health, risk indicators, or "who might churn".
+
+      nps_score:
+        definition: >
+          Net Promoter Score from the last survey response. Range -100 to +100.
+          Above 30 = good. Below 0 = concerning.
+        use_when: User asks about customer satisfaction, NPS, or "are they happy".
+
+  subscriptions:
+    description: >
+      One row per product subscription line per customer.
+      A customer can have multiple rows (e.g., base product + add-on).
+      Use this table for pricing, discount, and seat-level questions.
+    columns:
+      list_price_unit:
+        definition: >
+          The per-seat, per-year price in USD. This is P (unit price).
+          Enterprise = $420/seat/yr. Mid-Market = $480/seat/yr. SMB = $540/seat/yr.
+          The TI Add-on has no per-seat price — it's a flat fee captured in list_price_total.
+        use_when: >
+          User asks "what is the rate", "what do we charge per seat",
+          "what's the unit price", "what's the per-user cost".
+        do_not_confuse_with: list_price_total
+        example_questions:
+          - "What is the per-seat price for Mid-Market customers?"
+          - "What rate does Apex Financial pay per seat?"
+
+      list_price_total:
+        definition: >
+          list_price_unit multiplied by seats_contracted. This is P x Q —
+          the full undiscounted line total before any discounts.
+          For the TI Add-on, this is the flat annual fee ($45,000).
+        use_when: >
+          User asks about "what's the full price", "undiscounted value",
+          "what would we charge at list", "list total".
+        do_not_confuse_with: list_price_unit
+        example_questions:
+          - "What is the undiscounted value of Apex Financial's contract?"
+          - "What would Meridian pay at full list price?"
+
+      discount_pct:
+        definition: >
+          Discount applied to this subscription line. 0.0 = no discount.
+          0.15 = 15% discount. Most active customers have 0.0 (no discount).
+        use_when: User asks about discounts on a specific subscription.
+
+      mrr_usd:
+        definition: Actual Monthly Recurring Revenue billed after discount. mrr_usd x 12 = arr_usd.
+        use_when: User asks about monthly revenue, MRR, or monthly billing.
+
+      arr_usd:
+        definition: mrr_usd x 12. Actual annual revenue billed after discount.
+        use_when: User asks about annual revenue at the subscription level.
+
+  revenue_monthly:
+    description: >
+      Monthly ARR bridge. One row per month. Use for trend analysis,
+      YoY comparisons, and understanding net new ARR composition.
+    columns:
+      arr_usd:
+        definition: Total recognized ARR at end of month across all active customers.
+      new_arr:
+        definition: ARR added from new logos signing in this month.
+      expansion_arr:
+        definition: ARR added from existing customers expanding seats or buying add-ons.
+      churned_arr:
+        definition: ARR lost from customers who cancelled. Always a negative number.
+      net_new_arr:
+        definition: new_arr + expansion_arr + churned_arr. The net change in ARR this month.
+      nrr_pct:
+        definition: >
+          Net Revenue Retention percentage. Measures revenue from existing customers
+          including expansion and churn, excluding new logos.
+          Above 100% means existing customers are growing. Below 100% means shrinking.
+
+  support_tickets:
+    description: Inbound customer support requests. One row per ticket.
+    columns:
+      severity:
+        definition: P1 = critical/outage. P2 = major issue. P3 = minor/question.
+      csat_score:
+        definition: Customer satisfaction rating post-resolution. 1=very bad, 5=excellent. NULL if not yet rated.
+      resolution_hrs:
+        definition: Hours from ticket creation to resolution. NULL if still open.
+
+  usage_metrics:
+    description: >
+      Monthly product usage per customer. One row per customer per month.
+      Use to assess engagement and identify at-risk accounts based on usage decline.
+    columns:
+      seat_utilization:
+        definition: active_users / seats_contracted. Values above 1.0 mean overages.
+      feature_adoption:
+        definition: >
+          Fraction (0.0–1.0) of available product features used in this month.
+          Below 0.4 indicates shallow usage and churn risk.
+
+# ──────────────────────────────────────────────────────────────
+# INTENT DISAMBIGUATION RULES
+# When a user's question is ambiguous, apply these rules in order.
+# ──────────────────────────────────────────────────────────────
+disambiguation_rules:
+
+  - phrase: "how many seats"
+    interpret_as: seats_contracted
+    rationale: Contractual question — the answer is what they paid for.
+
+  - phrase: "how many users / active users / who is using it"
+    interpret_as: seats_active
+    rationale: Usage question — the answer is actual logged-in users.
+
+  - phrase: "what do they pay / how much is their contract / ARR / revenue"
+    interpret_as: arr_usd on customers table
+    rationale: Revenue recognition question.
+
+  - phrase: "who owns / who is responsible for / who manages"
+    interpret_as: csm_owner
+    rationale: Unless the user says "who sold" or "account executive", default to CSM.
+
+  - phrase: "price per seat / rate / unit price"
+    interpret_as: list_price_unit on subscriptions table
+    rationale: Unit pricing question — the per-seat rate.
+
+  - phrase: "total contract value / full price / list price / undiscounted"
+    interpret_as: list_price_total on subscriptions table
+    rationale: Line total question — unit price times quantity.
+
+  - phrase: "current ARR / total ARR / how much ARR"
+    interpret_as: SUM(arr_usd) WHERE status IN ('Active','At-Risk') on customers table
+    rationale: Current recognized revenue. Exclude Churned and Prospect rows.
+
+  - phrase: "bookings / signed / contracted value (in pipeline context)"
+    interpret_as: arr_bookings_usd
+    rationale: Bookings question, not recognized revenue.
+
+# ──────────────────────────────────────────────────────────────
+# GROUNDING RULES — Anti-hallucination
+# These rules are absolute constraints the model must follow.
+# ──────────────────────────────────────────────────────────────
+grounding_rules:
+
+  - rule: never_invent_numbers
+    description: >
+      Never state a number that is not directly present in the source data.
+      If the data does not contain the answer, say "I don't have that data."
+
+  - rule: always_cite_source
+    description: >
+      Every factual claim must be attributed to a specific source:
+      BigQuery table name, PDF section, Excel sheet name, or Word doc section.
+
+  - rule: no_extrapolation
+    description: >
+      Do not forecast, project, or extrapolate beyond what the data shows.
+      If asked "what will ARR be next quarter?", say the data only goes to Sept 2024
+      and offer to describe the trend instead.
+
+  - rule: flag_ambiguous_questions
+    description: >
+      If a question could be answered two different ways depending on column interpretation,
+      state which interpretation you used and why, referencing this data dictionary.
+      Example: "You asked about 'seats' — I used seats_contracted (850) not seats_active (848)
+      because you asked what they purchased, not what they're using."
+
+  - rule: confidence_transparency
+    description: >
+      If combining data from multiple sources where figures may not perfectly reconcile
+      (e.g. ARR in BQ vs ARR mentioned in PDF board report), note the discrepancy
+      and explain which source you're treating as authoritative and why.
+
+  - rule: scope_limitation
+    description: >
+      This system only knows what is in the connected sources.
+      It does not know about emails, Slack messages, Salesforce notes, or verbal commitments
+      unless those are in the loaded sources.
